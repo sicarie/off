@@ -1,0 +1,102 @@
+#!/usr/bin/python3
+
+import socket
+import subprocess
+import os
+
+from sys import platform
+
+
+def context():
+    networkDetails = []
+    try: #mac
+        out = subprocess.run(["ifconfig", "en0"], capture_output=True)
+        lines = out.stdout.split()
+        networkDetails.append(str(lines[15], encoding='utf-8'))
+        networkDetails.append(str(lines[17], encoding='utf-8'))
+        networkDetails.append(str(lines[19], encoding='utf-8'))
+        networkDetails.append("mac")
+        return(networkDetails)
+    except Exception as e:
+        pass
+    try: #win
+        out = subprocess.run(["ipconfig", "eth0"], capture_output=True)
+        lines = out.stdout.split()
+        networkDetails.append(str(lines[15], encoding='utf-8'))
+        networkDetails.append(str(lines[17], encoding='utf-8'))
+        networkDetails.append(str(lines[19], encoding='utf-8'))
+        networkDetails.append("win")
+        return(networkDetails)
+    except Exception as e:
+        pass
+#end_context()
+
+
+def scanner(context):
+    scan_result = ''
+    #refactor here
+    #use network module to calc addresses & probe hosts
+    ports="80,8080,161,25,465,587,445,139,111,2049,ICMP"
+    #for each ip in range, icmp, hit port w/protocol
+    for port in ports.split(','):
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            output = sock.connect_ex((ip, int(port)))
+
+            if output == 0:
+                scan_result += "[+] Port " + port + " is open.\n"
+            else:
+                scan_result += "[-] Port " + port + " is closed or unreachable.\n"
+
+            sock.close()
+
+        except Exception as e:
+            pass
+#end_scanner
+
+
+def dnsEnum(context):
+    '''
+    This is Python2, so we have to change all of this
+    import dns.resolver
+
+    # Set the target domain and record type
+    target_domain = "twitter.com"  # should be AD or internal domain
+    record_types = ["A", "AAAA", "CNAME", "MX", "NS", "SOA", "TXT"]
+    # Create a DNS resolver
+    resolver = dns.resolver.Resolver()
+    for record_type in record_types:
+        try:
+            answers = resolver.resolve(target_domain, record_type)
+        except dns.resolver.NoAnswer:
+            continue
+        print(f"{record_type} records for {target_domain}:")
+        for rdata in answers:
+            print(f" {rdata}")
+    '''
+#done_dnsEnum
+
+
+def etcHosts(context):
+    #read etc hosts and bring in every line that's not localhost
+    if 'mac' in context[4]:
+      #stuff
+      with open('/etc/hosts','r') as f:
+        for s_line in f:
+          if s_line['#']:
+             pass
+          elif '127.0.0.1' in s_line:
+              pass
+          else:
+            #get IP, add to list
+    else: #win
+      #otherstuff
+#done_etcHosts
+
+
+def main():
+    network = context()
+    scanner(network)
+
+main()
+#done
